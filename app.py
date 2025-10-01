@@ -1,6 +1,6 @@
 from flask import Flask
 import calendar
-from datetime import date, timedelta
+from datetime import date
 
 app = Flask(__name__)
 
@@ -19,12 +19,23 @@ def get_next_month_dates():
     current_week = []
     for d in month_days:
         if d.month == month:
+            # Weekends
             if d.weekday() in [5, 6]:  # Saturday=5, Sunday=6
-                weekends.append((d.strftime("%d/%m/%Y"), d.strftime("%A")))
+                weekends.append({
+                    "date": d.strftime("%d/%m/%Y"),
+                    "day": d.strftime("%A"),
+                    "support": "Full Day",
+                    "resource": "TBD"  # assign manually or rotate
+                })
             current_week.append(d)
-            if d.weekday() == 6:  # End of week
-                weeks.append((current_week[0].strftime('%d/%m/%Y'),
-                              current_week[-1].strftime('%d/%m/%Y')))
+
+            # Weekly ranges
+            if d.weekday() == 6:  # End of week (Sunday)
+                weeks.append({
+                    "range": f"{current_week[0].strftime('%d/%m/%Y')} --> {current_week[-1].strftime('%d/%m/%Y')}",
+                    "primary": "TBD",      # assign manually or rotate
+                    "secondary": "TBD"     # assign manually or rotate
+                })
                 current_week = []
 
     return weekends, weeks
@@ -33,15 +44,26 @@ def get_next_month_dates():
 def next_month():
     weekends, weeks = get_next_month_dates()
 
-    # Build HTML tables
-    weekends_html = "<h3>Weekend Support</h3><table border='1' cellpadding='5'><tr><th>Date</th><th>Day</th></tr>"
-    for d, day in weekends:
-        weekends_html += f"<tr><td>{d}</td><td>{day}</td></tr>"
+    # Weekend Support table
+    weekends_html = """
+    <h3>Weekend Support</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr>
+        <th>Date</th><th>Support</th><th>Day</th><th>Resource</th>
+      </tr>
+    """
+    for w in weekends:
+        weekends_html += f"<tr><td>{w['date']}</td><td>{w['support']}</td><td>{w['day']}</td><td>{w['resource']}</td></tr>"
     weekends_html += "</table>"
 
-    weeks_html = "<h3>Primary/Secondary Weeks</h3><table border='1' cellpadding='5'><tr><th>Range</th></tr>"
-    for start, end in weeks:
-        weeks_html += f"<tr><td>{start} --> {end}</td></tr>"
+    # Primary/Secondary table
+    weeks_html = """
+    <h3>Primary / Secondary Weeks</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr><th>Date</th><th>Primary</th><th>Secondary</th></tr>
+    """
+    for wk in weeks:
+        weeks_html += f"<tr><td>{wk['range']}</td><td>{wk['primary']}</td><td>{wk['secondary']}</td></tr>"
     weeks_html += "</table>"
 
     return weekends_html + "<br><br>" + weeks_html
