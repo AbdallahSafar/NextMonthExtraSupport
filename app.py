@@ -25,7 +25,7 @@ def get_next_month_dates():
                     "date": d.strftime("%d/%m/%Y"),
                     "day": d.strftime("%A"),
                     "support": "Full Day",
-                    "resource": "TBD"  # assign manually or rotate
+                    "resource": ""
                 })
             current_week.append(d)
 
@@ -33,8 +33,8 @@ def get_next_month_dates():
             if d.weekday() == 6:  # End of week (Sunday)
                 weeks.append({
                     "range": f"{current_week[0].strftime('%d/%m/%Y')} --> {current_week[-1].strftime('%d/%m/%Y')}",
-                    "primary": "TBD",      # assign manually or rotate
-                    "secondary": "TBD"     # assign manually or rotate
+                    "primary": "",
+                    "secondary": ""
                 })
                 current_week = []
 
