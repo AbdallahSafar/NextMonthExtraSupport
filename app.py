@@ -1,6 +1,6 @@
 from flask import Flask
 import calendar
-from datetime import date
+from datetime import date, timedelta
 
 app = Flask(__name__)
 
@@ -10,33 +10,32 @@ def get_next_month_dates():
     month = today.month + 1 if today.month < 12 else 1
     year = year if today.month < 12 else year + 1
 
-    c = calendar.Calendar(firstweekday=calendar.SATURDAY)
-    month_days = c.itermonthdates(year, month)
+    c = calendar.Calendar()
+    month_days = [d for d in c.itermonthdates(year, month) if d.month == month]
 
     weekends = []
     weeks = []
 
-    current_week = []
+    # Collect weekends
     for d in month_days:
-        if d.month == month:
-            # Weekends
-            if d.weekday() in [5, 6]:  # Saturday=5, Sunday=6
-                weekends.append({
-                    "date": d.strftime("%d/%m/%Y"),
-                    "day": d.strftime("%A"),
-                    "support": "Full Day",
-                    "resource": ""
-                })
-            current_week.append(d)
+        if d.weekday() in [5, 6]:  # Saturday=5, Sunday=6
+            weekends.append({
+                "date": d.strftime("%d/%m/%Y"),
+                "day": d.strftime("%A"),
+                "support": "Full Day",
+                "resource": ""
+            })
 
-            # Weekly ranges
-            if d.weekday() == 6:  # End of week (Sunday)
-                weeks.append({
-                    "range": f"{current_week[0].strftime('%d/%m/%Y')} --> {current_week[-1].strftime('%d/%m/%Y')}",
-                    "primary": "",
-                    "secondary": ""
-                })
-                current_week = []
+    # Build Friday–Thursday weeks
+    for d in month_days:
+        if d.weekday() == 4:  # Friday = 4
+            start = d
+            end = start + timedelta(days=6)
+            weeks.append({
+                "range": f"{start.strftime('%d/%m/%Y')} --> {end.strftime('%d/%m/%Y')}",
+                "primary": "",
+                "secondary": ""
+            })
 
     return weekends, weeks
 
